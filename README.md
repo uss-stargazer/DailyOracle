@@ -43,6 +43,42 @@ is stored in this directory, but you can specify the file with `-TaskFile ...`. 
 
 ## how it works
 
+### algorithm
+
+NOTE: idk how to really format psuedocode, so sorry...
+
+for task distribution:
+
+```
+# map for distribution of tasks by range (key: date range; value: number of tasks)
+# this is the target value of the algorithm
+#
+# NOTE: in implementation tasksByDayRange uses the day range end as map key (since the start is
+# implied to be the end of previous, defaulting to today).
+tasksDistribution = EMPTY ORDERED MAP 
+
+FUNCTION addRangeToDistribution(range, n_tasks):
+    prev_range, prev_n_tasks = ...
+    range = days between due day and last due day
+    n_tasks = tasksByDueDay[range]
+    freq = n_task / range
+    prev_freq = prev_n_tasks / prev_range
+    if freq > prev_freq:
+        remove taskDistribution[previous_range]
+        range = prev_range + range
+        n_tasks = prev_n_tasks + n_tasks
+        addRangeToDistribution(range, n_tasks)
+    else:
+        taskDistribution[range] = n_tasks
+
+tasksByDueDay = map between due day and number of tasks
+order due days ascending
+foreach due_day:
+    addRangeToDistribution(due_day, taskByDueDay[due_day])
+```
+
+resolving dates for each task, conforming to distribution
+
 ### task file schema
 
 note that Task properties starting in `_` are internal state variables (althought they technically
@@ -59,8 +95,8 @@ can be editted, they'll likely be overwritten).
                 "type": "string",
                 "format": "date"
             },
-            "_TargetDay": { "type": "number" }
-        }
+        },
+        "required": ["Name", "Due"]
     }
 }
 ```
