@@ -18,12 +18,12 @@ if ($Silent) {
 # like Write-Tasks, etc.
 . "$PSScriptRoot/Oracle-Tasks.ps1" @PSBoundParameters
 
-if (-not ($script:Tasks)) {
-  Write-Error 'excpected Tasks from Oracle-Tasks'
+if (-not ($script:Tasks -is [array])) {
+  Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
 }
 
 # order by due date ascending (important!)
-Sort-Object $script:Tasks -proeprty Due
+$script:Tasks = $script:Tasks | Sort-Object -Property Due
 
 # get task distribution ---------------------------------------------------------------------------
 
@@ -32,6 +32,8 @@ Sort-Object $script:Tasks -proeprty Due
 $script:TaskDistribution = [ordered]@{}
 
 function Add-RangeToDistribution([int]$endDay, [int]$numTasks) {
+  echo "add to dist endrange $endDay, with $numTasks tasks"
+
   # get $prevNumTasks, $prevEndDay, and $prevPrevEndDay (needed for range, then frequency calc)
   $endDays = [array]$script:TaskDistribution.Keys
   switch ($endDays.Count) {
@@ -54,20 +56,32 @@ function Add-RangeToDistribution([int]$endDay, [int]$numTasks) {
 
   $range = $endDay - $prevEndDay
   $prevRange = $prevEndDay - $prevPrevEndDay
-  $prevFreq = [double]$prevNumTasks / [double]$prevRange
-  if ([double]::IsInfinity($prevFreq)) {
-    $prevFreq = 0
-  }
-  $freq = [double]$numTasks / [double]$range
+  echo "range: $range"
+  echo "prevrange: $prevRange"
 
-  if ($freq -gt $prevFreq) {
+  $prevFreq = [double]$prevNumTasks / [double]$prevRange
+  $freq = [double]$numTasks / [double]$range
+  if ([double]::IsNaN($prevFreq)) {
+    $prevFreq = [double]::PositiveInfinity
+  }
+  if ([double]::IsNaN($freq)) {
+    $freq = [double]::PositiveInfinity
+  }
+
+  echo "prevfreq: $prevFreq"
+  echo "freq: $freq"
+
+  if ($freq -ge $prevFreq) {
+    echo "combining $prevEndDay with $endDay"
     $script:TaskDistribution.Remove($prevEndDay)
     $newEndDay = $endDay
     $newNumTasks = $prevNumTasks + $numTasks
     Add-RangeToDistribution $newEndDay $newNumTasks
   } else {
+    echo "dist add: $endDay, $numTasks"
     $script:TaskDistribution.Add([object]$endDay, $numTasks)
   }
+  $script:TaskDistribution
 }
 
 $tasksByDueDay = [ordered]@{}
@@ -75,10 +89,14 @@ foreach ($task in $script:Tasks) {
   $dueDay = (New-TimeSpan -Start (Get-Date).Date -End $task.Due).Days
   $tasksByDueDay[[object]$dueDay]++
 }
+
 foreach ($pair in $tasksByDueDay.GetEnumerator()) {
   $dueDay = $pair.Key
   $numTasks = $pair.Value
   Add-RangeToDistribution $dueDay $numTasks
 }
 
-$script:TaskDistribution
+$script:TaskDistribution.GetEnumerator() | foreach {
+  "key: $($_.key)"
+  "$((Get-Date).AddDays($_.Key)): $($_.Value)"
+}

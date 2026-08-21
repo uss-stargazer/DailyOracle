@@ -47,7 +47,11 @@ is stored in this directory, but you can specify the file with `-TaskFile ...`. 
 
 NOTE: idk how to really format psuedocode, so sorry...
 
-for task distribution:
+for task distribution, we find the number of tasks to complete during continuous ranges. I think of
+it like a staircase of water resovoirs. the tasks are ordered by due date, ascending (very
+important), then iteratively added to the last resovoir. if a resovoir exceeds the water level of
+the previous resovoir, they are combined into one larger resovoir (the water level is symbolic for
+task frequency). here's the psuedocode:
 
 ```
 # map for distribution of tasks by range (key: date range; value: number of tasks)
@@ -71,13 +75,21 @@ FUNCTION addRangeToDistribution(range, n_tasks):
     else:
         taskDistribution[range] = n_tasks
 
-tasksByDueDay = map between due day and number of tasks
-order due days ascending
+order tasks by due date ascending
+tasksByDueDay = map between due day and number of tasks (by itering over ordered tasks)
 foreach due_day:
     addRangeToDistribution(due_day, taskByDueDay[due_day])
 ```
 
-resolving dates for each task, conforming to distribution
+so once we have the distribution, we use it to resolving dates for each task. we can do this by
+walking along the distribution and evenly distributing tasks _in oreder_. since all the tasks are
+ordered by due date, tasks will be assigned a date that is before their due date even if the range
+in the distribution exceeds that due date. here is the psuedocode:
+
+```
+order tasks by due date ascending (should already be done)
+foreach range in tasksDistribution:
+```
 
 ### task file schema
 
