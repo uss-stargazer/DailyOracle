@@ -43,12 +43,16 @@ if ($TaskFile) {
 class Task {
   [ValidateNotNullOrEmpty()]
   [string]$Name
+  [ValidateNotNullOrEmpty()]
   [datetime]$Due
+
+  [datetime]$_TargetDate
 
   [object] ToRaw() {
     return @{
-      Name  = $this.Name
-      Due   = $this.Due.ToString("yyyy-MM-dd")
+      Name        = $this.Name
+      Due         = $this.Due.ToString("yyyy-MM-dd")
+      _TargetDate = $this._TargetDate.ToString("yyyy-MM-dd")
     }
   }
 }
@@ -69,7 +73,7 @@ function Write-Tasks([Task[]]$Tasks, [string]$TaskFile) {
   if (-not $Tasks -or ($Tasks.Count -eq 0)) {
     Set-Content -Path $TaskFile -Value '[]'
   } else {
-    $Tasks.ToRaw() | ConvertTo-Json -Depth 100 | Set-Content -Path $TaskFile
+    $Tasks | ForEach-Object { $_.ToRaw() } | ConvertTo-Json -Depth 100 | Set-Content -Path $TaskFile
   }
 }
 

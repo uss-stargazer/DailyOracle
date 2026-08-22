@@ -43,10 +43,70 @@ is stored in this directory, but you can specify the file with `-TaskFile ...`. 
 
 ## how it works
 
+### algorithm
+
+NOTE: idk how to really format psuedocode, so sorry...
+
+for task distribution, we find the number of tasks to complete during continuous ranges. I think of
+it like a staircase of water resovoirs. the tasks are ordered by due date, ascending (very
+important), then iteratively added to the last resovoir. if a resovoir exceeds the water level of
+the previous resovoir, they are combined into one larger resovoir (the water level is symbolic for
+task frequency). here's the psuedocode:
+
+```
+# map for distribution of tasks by range (key: date range; value: number of tasks)
+# this is the target value of the algorithm
+#
+# NOTE: in implementation tasksByDayRange uses the day range end as map key (since the start is
+# implied to be the end of previous, defaulting to today).
+tasksDistribution = EMPTY ORDERED MAP 
+
+FUNCTION addRangeToDistribution(range, n_tasks):
+    prev_range, prev_n_tasks = ...
+    range = days between due day and last due day
+    n_tasks = tasksByDueDay[range]
+    freq = n_task / range
+    prev_freq = prev_n_tasks / prev_range
+    if freq > prev_freq:
+        remove taskDistribution[previous_range]
+        range = prev_range + range
+        n_tasks = prev_n_tasks + n_tasks
+        addRangeToDistribution(range, n_tasks)
+    else:
+        taskDistribution[range] = n_tasks
+
+order tasks by due date ascending
+tasksByDueDay = map between due day and number of tasks (by itering over ordered tasks)
+foreach due_day:
+    addRangeToDistribution(due_day, taskByDueDay[due_day])
+```
+
+so once we have the distribution, we use it to resolving dates for each task. we can do this by
+walking along the distribution and evenly distributing tasks _in oreder_. since all the tasks are
+ordered by due date, tasks will be assigned a date that is before their due date even if the range
+in the distribution exceeds that due date. here is the psuedocode:
+
+```
+order tasks by due date ascending (should already be done)
+task_idx = 0
+foreach range in tasksDistribution:
+    n_tasks_per_day = int(taskDistribution[range] / range)
+    remainder = taskDistribution[range] % range
+    gap_size = range / remainder
+    for i in range: 
+        day = range_start + i
+        n_tasks = n_tasks_per_day
+        if i % gap_size == 0:
+            n_tasks++
+        for t in n_task:
+            tasks[task_idx].targetday = day
+            task_idx++
+```
+
 ### task file schema
 
-note that Task properties starting in `_` are internal state variables (althought they technically
-can be editted, they'll likely be overwritten).
+note that Task properties starting in `_` are internal state variables (although they technically
+can be edited, they'll likely be overwritten).
 
 ```json
 {
@@ -59,8 +119,12 @@ can be editted, they'll likely be overwritten).
                 "type": "string",
                 "format": "date"
             },
-            "_TargetDay": { "type": "number" }
-        }
+            "_TargetDate": {
+                "type": "string",
+                "format": "date"
+            }
+        },
+        "required": ["Name", "Due"]
     }
 }
 ```
