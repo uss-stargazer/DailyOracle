@@ -26,6 +26,9 @@ if ($Silent) {
   $InformationPreference = 'SilentlyContinue'
 }
 
+# ListAll implied if no operations specified
+$ListAll = $ListAll -or -not ($Add -or $Complete)
+
 $script:TargetDay = 0 # script uses dates relative to current, default today
 if ($InDays -ne $null) {
   $script:TargetDay = $InDays

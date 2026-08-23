@@ -22,7 +22,7 @@ if ($Silent) {
 
 # takes care of loading $script:TaskFile, $script:Tasks, $script:TargetDay, plus it loads functions
 # like Write-Tasks, etc.
-. "$PSScriptRoot/Oracle-Tasks.ps1" @PSBoundParameters
+$null = . "$PSScriptRoot/Oracle-Tasks.ps1" @PSBoundParameters
 
 if (-not $script:Tasks) {
   Write-Warning 'no tasks to spread'
