@@ -33,6 +33,18 @@ if (-not ($script:Tasks -is [array])) {
   Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
 }
 
+# ignore overdue tasks in spread
+$today = (Get-Date).Date
+$script:OverdueTasks = $script:Tasks | Where-Object { $_.Due -lt $today } 
+$script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } 
+if ($script:OverdueTasks.Count -gt 0) {
+  Write-Warning "excluding $($script:OverdueTasks.Count) overdue tasks from spread"
+}
+if ($script:Tasks.Count -eq 0) {
+  Write-Warning 'no tasks to spread'
+  return
+}
+
 # order by due date ascending (important!)
 $script:Tasks = $script:Tasks | Sort-Object -Property Due
 
