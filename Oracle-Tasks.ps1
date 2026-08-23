@@ -46,14 +46,21 @@ class Task {
   [ValidateNotNullOrEmpty()]
   [datetime]$Due
 
-  [datetime]$_TargetDate
+  [string]$Description
+  [nullable[datetime]]$_TargetDate
 
-  [object] ToRaw() {
-    return @{
-      Name        = $this.Name
-      Due         = $this.Due.ToString("yyyy-MM-dd")
-      _TargetDate = $this._TargetDate.ToString("yyyy-MM-dd")
+  [object] Serialize() {
+    $serialized = @{
+      Name = $this.Name
+      Due  = $this.Due.ToString("yyyy-MM-dd")
     }
+    if ($this.Description) {
+      $serialized.Description = $this.Description
+    }
+    if ($this._TargetDate) {
+      $serialized._TargetDate = $this._TargetDate.ToString("yyyy-MM-dd")
+    }
+    return $serialized
   }
 }
 
@@ -73,7 +80,10 @@ function Write-Tasks([Task[]]$Tasks, [string]$TaskFile) {
   if (-not $Tasks -or ($Tasks.Count -eq 0)) {
     Set-Content -Path $TaskFile -Value '[]'
   } else {
-    $Tasks | ForEach-Object { $_.ToRaw() } | ConvertTo-Json -Depth 100 | Set-Content -Path $TaskFile
+    $Tasks |
+      ForEach-Object { $_.Serialize() } |
+      ConvertTo-Json -Depth 100 |
+      Set-Content -Path $TaskFile
   }
 }
 

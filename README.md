@@ -119,6 +119,7 @@ can be edited, they'll likely be overwritten).
                 "type": "string",
                 "format": "date"
             },
+            "Description": { "type": "string" },
             "_TargetDate": {
                 "type": "string",
                 "format": "date"
