@@ -72,7 +72,7 @@ function Get-Tasks([string]$TaskFile) {
     $json = Get-Content $TaskFile -Raw | ConvertFrom-Json
     return [Task[]]$json
   } catch {
-    Write-Error "invalid task json... refer to README!"
+    Write-Error "invalid task json; refer to README!"
   }
 }
 
