@@ -5,9 +5,21 @@
 .DESCRIPTION
     Loads task file from default location or from -TaskFile, runs spread algorithm to compute target
     dates, then writes them to task file.
+
+.PARAMETER Delay
+    There are two anchor points when spreading: today and the due date. Normally, it equally
+    distributes the tasks between the anchors and including the former. If this is set, it only
+    distributes between the anchors. (in implementation, its a bit more complicated, but this is the
+    gist)
+
+.PARAMETER KeepToday
+    Anchor tasks that have _TargetDate as today and apply spread algorithm on the rest. Implicitly
+    sets -Delay.
 #>
 
 param (
+  [switch]$Delay,
+  [switch]$KeepToday,
   [string]$TaskFile,
   [switch]$Silent
 )
@@ -35,13 +47,30 @@ if (-not ($script:Tasks -is [array])) {
   Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
 }
 
-# ignore overdue tasks in spread
 $today = (Get-Date).Date
-$script:OverdueTasks = $script:Tasks | Where-Object { $_.Due -lt $today } 
-$script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } 
-if ($script:OverdueTasks.Count -gt 0) {
+
+# ignore overdue tasks in spread
+$script:OverdueTasks = $script:Tasks | Where-Object { $_.Due.Date -lt $today } 
+$script:Tasks = $script:Tasks | Where-Object { $_.Due.Date -ge $today } 
+if ($script:IgnoredTasks.Count -gt 0) {
   Write-Warning "excluding $($script:OverdueTasks.Count) overdue tasks from spread"
 }
+
+# if KeepToday, ignore today tasks and set delay
+if ($KeepToday) {
+  $script:TodayTasks = $script:Tasks | Where-Object {
+    $_._TargetDate -and ($_._TargetDate.Date -le $today)
+  } 
+  $script:Tasks = $script:Tasks | Where-Object {
+    (-not $_._TargetDate) -or ($_._TargetDate.Date -gt $today)
+  } 
+  if ($script:TodayTasks.Count -gt 0) {
+    Write-Warning "excluding $($script:TodayTasks.Count) today tasks from spread"
+  }
+  $Delay = $true
+}
+
+$script:IgnoredTasks = $script:OverdueTasks + $script:TodayTasks
 if ($script:Tasks.Count -eq 0) {
   Write-Warning 'no tasks to spread'
   return
@@ -133,12 +162,18 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   $range.Length = [double]$range.Length
   $tasksPerDay = [int][Math]::Floor($range.NumTasks / $range.Length)
   $remainderTasks = [int]($range.NumTasks % $range.Length)
-  $gapSize = $range.Length / [double]$remainderTasks
+  if ($Delay) {
+    $gapSize = $range.Length / [double]($remainderTasks + 1)
+    $gapStartIdx = 1
+  } else {
+    $gapSize = $range.Length / [double]$remainderTasks
+    $gapStartIdx = 0
+  }
 
   # since the gap might be a fraction we have to precalculate gap days (rounding down)
   [int[]]$extraTaskDays = @()
   for ($i = 0; $i -lt $remainderTasks; $i++) {
-    $gapDay = [int][Math]::Floor($i * [double]$gapSize)
+    $gapDay = [int][Math]::Floor(($gapStartIdx + $i) * [double]$gapSize)
     $extraTaskDays += $gapDay
   }
 
@@ -163,5 +198,8 @@ if ($taskIdx -lt ($script:Tasks.Count - 1)) {
 }
 
 # apply
+if ($script:IgnoredTasks) {
+  $script:Tasks = @($script:IgnoredTasks) + @($script:Tasks)
+}
 Write-CliInfo 'spread computed and writing _TargetDate values'
 Write-Tasks $script:Tasks $script:TaskFile

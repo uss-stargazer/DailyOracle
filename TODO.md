@@ -1,6 +1,3 @@
-- what to do about tasks that werent completed from day before
-- oracle.ps1 just returns the "prophecy" (todo list) for the specified dates
-  - KeepToday  option for oracle-spread.ps1 (which gets called when oracle.ps1 finds undated tasks)
 - -option to show dotplot for Oracle.ps1
     - from min(dates) to max(dates)
 - terminal animations for completing, etc

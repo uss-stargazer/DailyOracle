@@ -81,5 +81,4 @@ if ($ListAll) {
   if ($script:Tasks.Count -eq 0) {
     Write-CliInfo 'no tasks'
   }
-  return $script:Tasks
-}
+  return $script:Tasks }

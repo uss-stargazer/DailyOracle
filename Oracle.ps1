@@ -74,6 +74,9 @@ if ($script:OverdueTasks.Count -gt 0) {
 # if there are any values that don't have a target date, spread tasks
 if (($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0) {
   Write-Warning "some tasks don't have target dates, so running spread algorithm"
+  if (($script:Tasks | Where-Object { $_._TargetDate }).Count -ne 0) {
+    $OracleParams['-KeepToday'] = $true
+  }
   & "$PSScriptRoot/Oracle-Spread.ps1" @OracleParams
   Load-Tasks
 }
