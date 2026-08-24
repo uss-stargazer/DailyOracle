@@ -101,7 +101,11 @@ function Get-TaskDistRange([int]$Idx) {
 }
 
 function Add-RangeToDistribution([int]$endDay, [int]$numTasks) {
+  Write-Debug "requested add range: $endDay with $numTasks tasks"
+
   $prevRange = Get-TaskDistRange -1
+  Write-Debug "previous range:"
+  $prevRange | Out-String | Write-Debug
 
   $rangeLength = $endDay - $prevRange.EndDay
 
@@ -113,13 +117,17 @@ function Add-RangeToDistribution([int]$endDay, [int]$numTasks) {
   if ([double]::IsNaN($freq)) {
     $freq = [double]::PositiveInfinity
   }
+  Write-Debug "prev freq: $prevFreq"
+  Write-Debug "freq: $freq"
 
-  if ($freq -ge $prevFreq) {
+  if (($freq -ge $prevFreq) -and ($script:TaskDistribution.Count -gt 0)) {
+    Write-Debug 'combining current and previous'
     $script:TaskDistribution.Remove($prevRange.EndDay)
     $newEndDay = $endDay
     $newNumTasks = $prevRange.NumTasks + $numTasks
     Add-RangeToDistribution $newEndDay $newNumTasks
   } else {
+    Write-Debug "actually added to TaskDist"
     $script:TaskDistribution.Add([object]$endDay, $numTasks)
   }
 }
@@ -129,12 +137,16 @@ foreach ($task in $script:Tasks) {
   $dueDay = (New-TimeSpan -Start (Get-Date).Date -End $task.Due).Days
   $tasksByDueDay[[object]$dueDay]++
 }
+Write-Debug "tasksByDueDay:"
+$tasksByDueDay | Out-String | Write-Debug
 
 foreach ($pair in $tasksByDueDay.GetEnumerator()) {
   $dueDay = $pair.Key
   $numTasks = $pair.Value
   Add-RangeToDistribution $dueDay $numTasks
 }
+
+Write-Debug 'TaskDistribution computed'
 
 # some sanity checks
 $totalDistTasks = $script:TaskDistribution.GetEnumerator() |
@@ -147,6 +159,7 @@ if ($script:Tasks[-1].Due.Date -ne $maxDistDate.Date) {
   Write-Error "distribution doesn't contain all tasks (dev error)"
 }
 
+exit
 
 # resolve target dates ----------------------------------------------------------------------------
 
