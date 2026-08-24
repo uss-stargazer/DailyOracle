@@ -3,23 +3,23 @@ class Task {
   [string]$Name
   [ValidateNotNullOrEmpty()]
   [datetime]$Due
-
   [string]$Description
   [nullable[datetime]]$_TargetDate
+}
 
-  [object] Serialize() {
-    $serialized = @{
-      Name = $this.Name
-      Due  = $this.Due.ToString("yyyy-MM-dd")
-    }
-    if ($this.Description) {
-      $serialized.Description = $this.Description
-    }
-    if ($this._TargetDate) {
-      $serialized._TargetDate = $this._TargetDate.ToString("yyyy-MM-dd")
-    }
-    return $serialized
+# should be a Task method but powershell doesn't like that when converting from json...
+function ConvertTo-SerializedTask([Task]$task) {
+  $serialized = @{
+    Name = $task.Name
+    Due  = $task.Due.ToString("yyyy-MM-dd")
   }
+  if ($task.Description) {
+    $serialized.Description = $task.Description
+  }
+  if ($task._TargetDate) {
+    $serialized._TargetDate = $task._TargetDate.ToString("yyyy-MM-dd")
+  }
+  return $serialized
 }
 
 function Get-Tasks([string]$TaskFile) {
@@ -28,7 +28,7 @@ function Get-Tasks([string]$TaskFile) {
   }
   try {
     $json = Get-Content $TaskFile -Raw | ConvertFrom-Json
-    return [Task[]]$json
+    return [Task[]]($json | ForEach-Object { [Task]$_ })
   } catch {
     Write-Error "invalid task json; refer to README!"
   }
@@ -39,7 +39,7 @@ function Write-Tasks([Task[]]$Tasks, [string]$TaskFile) {
     Set-Content -Path $TaskFile -Value '[]'
   } else {
     $Tasks |
-      ForEach-Object { $_.Serialize() } |
+      ForEach-Object { ConvertTo-SerializedTask $_ } |
       ConvertTo-Json -Depth 100 |
       Set-Content -Path $TaskFile
   }
