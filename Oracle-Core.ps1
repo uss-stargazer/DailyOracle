@@ -48,3 +48,10 @@ function Write-Tasks([Task[]]$Tasks, [string]$TaskFile) {
 if (-not $script:TaskFile) {
   $script:TaskFile = Join-Path $PSScriptRoot 'oracle-tasks.json'
 }
+
+function Write-CliInfo([string]$Message) {
+  if ($InformationPreference -ne 'SilentlyContinue') {
+    Write-Host -ForegroundColor blue 'INFO' -NoNewLine
+    Write-Host "> $Message"
+  }
+}

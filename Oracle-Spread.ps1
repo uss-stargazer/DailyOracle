@@ -23,7 +23,7 @@ if ($Silent) {
 # loads $script:TaskFile, Get-Tasks, Write-Tasks
 . "$PSScriptRoot/Oracle-Core.ps1"
 
-Write-Information "loading tasks from $script:TaskFile"
+Write-CliInfo "loading tasks from $script:TaskFile"
 $script:Tasks = Get-Tasks $script:TaskFile
 
 if (-not $script:Tasks) {
@@ -163,5 +163,5 @@ if ($taskIdx -lt ($script:Tasks.Count - 1)) {
 }
 
 # apply
-Write-Information 'spread computed and writing _TargetDate values'
+Write-CliInfo 'spread computed and writing _TargetDate values'
 Write-Tasks $script:Tasks $script:TaskFile

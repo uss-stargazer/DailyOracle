@@ -59,7 +59,7 @@ function Load-Tasks() {
   $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } 
 }
 
-Write-Information "loading tasks from $script:TaskFile"
+Write-CliInfo "loading tasks from $script:TaskFile"
 Load-Tasks
 
 # target value of this script: tasks with targets in at the specified dates
@@ -91,9 +91,11 @@ foreach ($targetDate in $script:TargetDates) {
 }
 
 if ($script:Prophecy.Count -eq 0) {
-  Write-Information 'your future is yours... (nothing to do)'
+  Write-Host 'your future is yours... (nothing to do)'
 } else {
-  Write-Information 'here is your prophecy:'
+  Write-Host 'Behold your ' -NoNewLine
+  Write-Host -ForegroundColor Magenta 'PrOpHeCy' -NoNewLine
+  Write-Host ':'
 }
 
 return $script:Prophecy

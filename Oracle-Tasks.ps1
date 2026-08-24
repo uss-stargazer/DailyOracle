@@ -37,7 +37,7 @@ if ($InDays -ne $null) {
 # loads $script:TaskFile, Get-Tasks, Write-Tasks
 . "$PSScriptRoot/Oracle-Core.ps1"
 
-Write-Information "loading tasks from $script:TaskFile"
+Write-CliInfo "loading tasks from $script:TaskFile"
 $script:Tasks = Get-Tasks $script:TaskFile
 
 function Start-CompletionCelebration() {
@@ -50,7 +50,7 @@ if ($Add -or $Complete) {
       Write-Warning "task already exists: $_"
       $false
     } else {
-      Write-Information "new task: $_ (due on $script:TargetDate)"
+      Write-Host "ADD: $_ (due on $script:TargetDate)"
       $true
     }
   }
@@ -61,10 +61,10 @@ if ($Add -or $Complete) {
 
   $Complete = $Complete | Where-Object {
     if ($_ -in $script:Tasks.Name) {
-      Write-Information "remove task: $_"
+      Write-Host "COMPLETE: $_"
       $true
     } else {
-      Write-Warning "no task to complete: $_"
+      Write-Warning "task doesn't exist: $_"
       $false
     }
   }
@@ -73,13 +73,13 @@ if ($Add -or $Complete) {
     Start-CompletionCelebration
   }
 
-  Write-Information 'writing tasks'
+  Write-CliInfo 'writing tasks'
   Write-Tasks $script:Tasks $script:TaskFile
 }
 
 if ($ListAll) {
   if ($script:Tasks.Count -eq 0) {
-    Write-Information 'no tasks'
+    Write-CliInfo 'no tasks'
   }
   return $script:Tasks
 }
