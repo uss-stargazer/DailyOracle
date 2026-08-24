@@ -20,9 +20,11 @@ if ($Silent) {
   $InformationPreference = 'SilentlyContinue'
 }
 
-# takes care of loading $script:TaskFile, $script:Tasks, $script:TargetDay, plus it loads functions
-# like Write-Tasks, etc.
-$null = . "$PSScriptRoot/Oracle-Tasks.ps1" @PSBoundParameters
+# loads $script:TaskFile, Get-Tasks, Write-Tasks
+. "$PSScriptRoot/Oracle-Core.ps1"
+
+Write-Information "loading tasks from $script:TaskFile"
+$script:Tasks = Get-Tasks $script:TaskFile
 
 if (-not $script:Tasks) {
   Write-Warning 'no tasks to spread'

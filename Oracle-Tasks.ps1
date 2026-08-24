@@ -8,9 +8,9 @@
 #>
 
 param(
-  [Parameter(Position = 0, Mandatory = $false)]
-  [int]$InDays,
-  [datetime]$Date, 
+  [Parameter(Position = 0)]
+  [datetime]$Date = (Get-Date).Date, 
+  [nullable[int]]$InDays,
   [string[]]$Add = @(),
   [string[]]$Complete = @(),
   [string]$TaskFile,
@@ -29,66 +29,13 @@ if ($Silent) {
 # ListAll implied if no operations specified
 $ListAll = $ListAll -or -not ($Add -or $Complete)
 
-$script:TargetDay = 0 # script uses dates relative to current, default today
+$script:TargetDate = $Date
 if ($InDays -ne $null) {
-  $script:TargetDay = $InDays
-} elseif ($Date -ne $null) {
-  $script:TargetDay = (New-TimeSpan -Start (Get-Date).Date -End $Date).Days
-}
-$script:TargetDate = (Get-Date).AddDays($script:TargetDay)
-
-if ($TaskFile) {
-  $script:TaskFile = $TaskFile
-} else {
-  $script:TaskFile = Join-Path $PSScriptRoot 'oracle-tasks.json'
+  $script:TargetDate = (Get-Date).AddDays($InDays).Date
 }
 
-class Task {
-  [ValidateNotNullOrEmpty()]
-  [string]$Name
-  [ValidateNotNullOrEmpty()]
-  [datetime]$Due
-
-  [string]$Description
-  [nullable[datetime]]$_TargetDate
-
-  [object] Serialize() {
-    $serialized = @{
-      Name = $this.Name
-      Due  = $this.Due.ToString("yyyy-MM-dd")
-    }
-    if ($this.Description) {
-      $serialized.Description = $this.Description
-    }
-    if ($this._TargetDate) {
-      $serialized._TargetDate = $this._TargetDate.ToString("yyyy-MM-dd")
-    }
-    return $serialized
-  }
-}
-
-function Get-Tasks([string]$TaskFile) {
-  if (-not (Test-Path $TaskFile)) {
-    return @()
-  }
-  try {
-    $json = Get-Content $TaskFile -Raw | ConvertFrom-Json
-    return [Task[]]$json
-  } catch {
-    Write-Error "invalid task json; refer to README!"
-  }
-}
-
-function Write-Tasks([Task[]]$Tasks, [string]$TaskFile) {
-  if (-not $Tasks -or ($Tasks.Count -eq 0)) {
-    Set-Content -Path $TaskFile -Value '[]'
-  } else {
-    $Tasks |
-      ForEach-Object { $_.Serialize() } |
-      ConvertTo-Json -Depth 100 |
-      Set-Content -Path $TaskFile
-  }
-}
+# loads $script:TaskFile, Get-Tasks, Write-Tasks
+. "$PSScriptRoot/Oracle-Core.ps1"
 
 Write-Information "loading tasks from $script:TaskFile"
 $script:Tasks = Get-Tasks $script:TaskFile
