@@ -21,7 +21,7 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle 20                 # 20 days from now
 > Oracle -Dates "08/21/77"  # specific date
 > Oracle 0, 20              # prophecy for today and for 20 days for now
-> Oracle (0..20)            # all tasks for the next 20 days
+> Oracle (0..20)            # all prophecy for the next 20 days
 > Oracle (0..20) -Dotplot   # dotplot visualization of the next 20 days
 
 # List all tasks
@@ -51,11 +51,13 @@ to do today. This way you can literally be as lazy as possible while completing 
 
 Note: for tasks names, you should probably choose short names, so you don't have to type as much...
 
-For task management, you can also edit the json directly, `oracle-tasks.json`. By default the json
-is stored in this directory, but you can specify the file with `-TaskFile ...`. See the
-[schema](task-file-schema) for details.
+For task management, you can also edit the json directly. By default, it checks for 
+`DailyOracle.json` in `$HOME/Documents`, then `$HOME`, then this directory (you can also use
+symlinks). You can specify the file with `-Config` See the [schema](task-file-schema) for details.
 
 ## how it works
+
+NOTE: hasn't been tested for linux (probably doesn't work)
 
 CREDIT: [fireworks animation](https://github.com/p01nd3xt3r/PowershellAnimations)
 
@@ -119,7 +121,7 @@ foreach range in tasksDistribution:
             task_idx++
 ```
 
-### task file schema
+### config schema
 
 note that Task properties starting in `_` are internal state variables (although they technically
 can be edited, they'll likely be overwritten).

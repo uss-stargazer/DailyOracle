@@ -3,7 +3,7 @@
     CLI entrypoint to DailOracle, used to view get your to-do prophecy.
 
 .DESCRIPTION
-    Loads task file from default location or from -TaskFile, applied spreading algorithm for any
+    Loads task file from default location or from -ConfigFile, applied spreading algorithm for any
     change in tasks (user can change using Oracle-Tasks), and finally returns the prophecy (the list
     of tasks to do) for the supplied dates.
 
@@ -23,35 +23,27 @@ param (
   [int[]]$InDays = @(),
   [DateTime[]]$Dates = @(),
   [switch]$Dotplot,
-  [string]$TaskFile,
+  [string]$ConfigFile,
   [switch]$Silent
 )
 
-$InformationPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
-$PSNativeCommandUseErrorActionPreference = $true
+. "$PSScriptRoot/Oracle-Core.ps1"
 
-if ($Silent) {
-  $InformationPreference = 'SilentlyContinue'
-}
-
-$today = (Get-Date).Date
 [DateTime[]]$script:TargetDates = (
   @($Dates) + @($InDays | ForEach-Object { $today.AddDays($_) })
 ) | Sort-Object # order ascending
-
-$null = $PSBoundParameters.Remove('InDays')
-$null = $PSBoundParameters.Remove('Dates')
 if ($script:TargetDates.Count -eq 0) {
   $script:TargetDates = @($today)
 }
+
+$null = $PSBoundParameters.Remove('InDays')
+$null = $PSBoundParameters.Remove('Dates')
+$null = $PSBoundParameters.Remove('Dotplot')
 $OracleParams = $PSBoundParameters
 
-# loads $script:TaskFile, Get-Tasks, Write-Tasks
-. "$PSScriptRoot/Oracle-Core.ps1"
-
 function Load-Tasks() {
-  $script:Tasks = Get-Tasks $script:TaskFile
+  $script:Tasks = Get-Tasks
   if (-not $script:Tasks) {
     $script:Tasks = @()
   }
@@ -62,7 +54,6 @@ function Load-Tasks() {
   $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } 
 }
 
-Write-CliInfo "loading tasks from $script:TaskFile"
 Load-Tasks
 
 # target value of this script: tasks with targets in at the specified dates

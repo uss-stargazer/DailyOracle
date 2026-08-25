@@ -3,7 +3,7 @@
     Spread DailyOracle tasks between today and due dates.
 
 .DESCRIPTION
-    Loads task file from default location or from -TaskFile, runs spread algorithm to compute target
+    Loads task file from default location or from -ConfigFile, runs spread algorithm to compute target
     dates, then writes them to task file.
 
 .PARAMETER Delay
@@ -20,23 +20,14 @@
 param (
   [switch]$Delay,
   [switch]$KeepToday,
-  [string]$TaskFile,
+  [string]$ConfigFile,
   [switch]$Silent
 )
 
-$InformationPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
-$PSNativeCommandUseErrorActionPreference = $true
-
-if ($Silent) {
-  $InformationPreference = 'SilentlyContinue'
-}
-
-# loads $script:TaskFile, Get-Tasks, Write-Tasks
 . "$PSScriptRoot/Oracle-Core.ps1"
 
-Write-CliInfo "loading tasks from $script:TaskFile"
-$script:Tasks = Get-Tasks $script:TaskFile
+$script:Tasks = Get-Tasks
 
 if (-not $script:Tasks) {
   Write-Warning 'no tasks to spread'
@@ -46,8 +37,6 @@ if (-not $script:Tasks) {
 if (-not ($script:Tasks -is [array])) {
   Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
 }
-
-$today = (Get-Date).Date
 
 # ignore overdue tasks in spread
 $script:OverdueTasks = $script:Tasks | Where-Object { $_.Due.Date -lt $today } 
@@ -161,8 +150,6 @@ if ($script:Tasks[-1].Due.Date -ne $maxDistDate.Date) {
 
 # resolve target dates ----------------------------------------------------------------------------
 
-$today = (Get-Date).Date
-
 $taskIdx = 0
 for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   $range = Get-TaskDistRange $rangeIdx
@@ -213,4 +200,4 @@ if ($script:IgnoredTasks) {
   $script:Tasks = @($script:IgnoredTasks) + @($script:Tasks)
 }
 Write-CliInfo 'spread computed and writing _TargetDate values'
-Write-Tasks $script:Tasks $script:TaskFile
+Write-Tasks $script:Tasks

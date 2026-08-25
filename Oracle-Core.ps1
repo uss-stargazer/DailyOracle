@@ -1,3 +1,7 @@
+$today = (Get-Date).Date
+
+# task management ---------------------------------------------------------------------------------
+
 class Task {
   [ValidateNotNullOrEmpty()]
   [string]$Name
@@ -22,32 +26,30 @@ function ConvertTo-SerializedTask([Task]$task) {
   return $serialized
 }
 
-function Get-Tasks([string]$TaskFile) {
-  if (-not (Test-Path $TaskFile)) {
+function Get-Tasks() {
+  if (-not (Test-Path $script:ConfigFile)) {
     return @()
   }
   try {
-    $json = Get-Content $TaskFile -Raw | ConvertFrom-Json
+    $json = Get-Content $script:ConfigFile -Raw | ConvertFrom-Json
     return [Task[]]($json | ForEach-Object { [Task]$_ })
   } catch {
     Write-Error "invalid task json; refer to README!"
   }
 }
 
-function Write-Tasks([Task[]]$Tasks, [string]$TaskFile) {
+function Write-Tasks([Task[]]$Tasks) {
   if (-not $Tasks -or ($Tasks.Count -eq 0)) {
-    Set-Content -Path $TaskFile -Value '[]'
+    Set-Content -Path $script:ConfigFile -Value '[]'
   } else {
     $Tasks |
       ForEach-Object { ConvertTo-SerializedTask $_ } |
       ConvertTo-Json -Depth 100 |
-      Set-Content -Path $TaskFile
+      Set-Content -Path $script:ConfigFile
   }
 }
 
-if (-not $script:TaskFile) {
-  $script:TaskFile = Join-Path $PSScriptRoot 'oracle-tasks.json'
-}
+# misc utils --------------------------------------------------------------------------------------
 
 function Write-CliInfo([string]$Message) {
   if ($InformationPreference -ne 'SilentlyContinue') {
@@ -56,11 +58,8 @@ function Write-CliInfo([string]$Message) {
   }
 }
 
-# misc utils --------------------------------------------------------------------------------------
-
 $global:COLORS = 2, 3, 4, 6, 8, 10, 11, 12, 13, 14, 15
-$esc   = [char]27
-$reset = 
+$esc = [char]27
 
 # https://www.bgreco.net/powershell/format-rainbow/
 function Format-Rainbow() {
@@ -116,4 +115,29 @@ function Write-Fireworks([int]$Speed = 15) {
   [console]::TreatControlCAsInput = $False
   [console]::CursorVisible = $True
   Write-Host -NoNewLine ([char]27 + "[?1049l") # exit alt screen
+}
+
+# shared script initialization --------------------------------------------------------------------
+
+$InformationPreference = 'Continue'
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
+
+if ($script:Silent) {
+  $InformationPreference = 'SilentlyContinue'
+}
+
+function Get-DefaultConfigFile() {
+  $dirs = Get-Item "$HOME/Documents", "$HOME", "$PSScriptRoot" -ErrorAction SilentlyContinue
+  $file = Get-ChildItem -Path $dirs -Filter "DailyOracle.json" -ErrorAction SilentlyContinue |
+    Select-Object -First 1
+  if (-not $file) {
+    $file = Join-Path $dirs[0] 'DailyOracle.json'
+  }
+  return $file
+}
+
+if (-not $script:ConfigFile) {
+  $script:ConfigFile = Get-DefaultConfigFile
+  Write-CliInfo "using config at $script:ConfigFile"
 }

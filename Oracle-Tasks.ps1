@@ -3,7 +3,7 @@
     Manage DailyOracle tasks.
 
 .DESCRIPTION
-    Loads task file from default location or from -TaskFile, applies operations (Add or Complete),
+    Loads task file from default location or from -ConfigFile, applies operations (Add or Complete),
     updates task file, and optionally returns tasks (if -ListAll).
 #>
 
@@ -14,30 +14,21 @@ param(
   [string[]]$Add = @(),
   [string[]]$Complete = @(),
   [switch]$SelectComplete,
-  [string]$TaskFile,
   [switch]$ListAll,
   [switch]$NoEffects,
+  [string]$ConfigFile,
   [switch]$Silent
 )
 
-$InformationPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
-$PSNativeCommandUseErrorActionPreference = $true
-
-if ($Silent) {
-  $InformationPreference = 'SilentlyContinue'
-}
+. "$PSScriptRoot/Oracle-Core.ps1"
 
 $script:TargetDate = $Date
 if ($InDays -ne $null) {
   $script:TargetDate = (Get-Date).AddDays($InDays).Date
 }
 
-# loads $script:TaskFile, Get-Tasks, Write-Tasks
-. "$PSScriptRoot/Oracle-Core.ps1"
-
-Write-CliInfo "loading tasks from $script:TaskFile"
-$script:Tasks = Get-Tasks $script:TaskFile
+$script:Tasks = Get-Tasks
 
 if ($SelectComplete) {
   $selected = $script:Tasks | Out-GridView -Title "Select task(s) to complete" -OutputMode Multiple
@@ -82,11 +73,12 @@ if ($Add -or $Complete) {
   }
 
   Write-CliInfo 'writing tasks'
-  Write-Tasks $script:Tasks $script:TaskFile
+  Write-Tasks $script:Tasks
 }
 
 if ($ListAll) {
   if ($script:Tasks.Count -eq 0) {
     Write-CliInfo 'no tasks'
   }
-  return $script:Tasks }
+  return $script:Tasks
+}
