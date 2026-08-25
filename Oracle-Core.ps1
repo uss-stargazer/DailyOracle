@@ -38,8 +38,8 @@ function Get-Tasks() {
   }
 }
 
-function Write-Tasks([Task[]]$Tasks) {
-  if (-not $Tasks -or ($Tasks.Count -eq 0)) {
+function Write-Tasks($Tasks) { # NOTE: don't try to put [Task[]] because powershell complains can't convert [Task] to [Task] (??!?!)
+  if ((-not $Tasks) -or ($Tasks.Count -eq 0)) {
     Set-Content -Path $script:ConfigFile -Value '[]'
   } else {
     $Tasks |
