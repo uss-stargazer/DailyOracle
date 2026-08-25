@@ -27,15 +27,11 @@ param (
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/Oracle-Core.ps1"
 
-$script:Tasks = Get-Tasks
+$script:Tasks = @(Get-Tasks)
 
 if (-not $script:Tasks) {
   Write-Warning 'no tasks to spread'
   return
-}
-
-if (-not ($script:Tasks -is [array])) {
-  Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
 }
 
 # ignore overdue tasks in spread

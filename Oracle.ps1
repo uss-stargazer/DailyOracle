@@ -43,13 +43,7 @@ $null = $PSBoundParameters.Remove('Dotplot')
 $OracleParams = $PSBoundParameters
 
 function Load-Tasks() {
-  $script:Tasks = Get-Tasks
-  if (-not $script:Tasks) {
-    $script:Tasks = @()
-  }
-  if (-not ($script:Tasks -is [array])) {
-    Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
-  }
+  $script:Tasks = @(Get-Tasks)
   $script:OverdueTasks = $script:Tasks | Where-Object { $_.Due -lt $today } 
   $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } |
     Sort-Object -Property Due # order by hightest priority

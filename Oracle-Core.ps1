@@ -42,10 +42,9 @@ function Write-Tasks($Tasks) { # NOTE: don't try to put [Task[]] because powersh
   if ((-not $Tasks) -or ($Tasks.Count -eq 0)) {
     Set-Content -Path $script:ConfigFile -Value '[]'
   } else {
-    $Tasks |
-      ForEach-Object { ConvertTo-SerializedTask $_ } |
-      ConvertTo-Json -Depth 100 |
-      Set-Content -Path $script:ConfigFile
+    ConvertTo-Json -Depth 100 -InputObject @(
+      $Tasks | ForEach-Object { ConvertTo-SerializedTask $_ }
+    ) | Set-Content -Path $script:ConfigFile
   }
 }
 
