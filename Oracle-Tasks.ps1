@@ -13,6 +13,7 @@ param(
   [nullable[int]]$InDays,
   [string[]]$Add = @(),
   [string[]]$Complete = @(),
+  [switch]$SelectComplete,
   [string]$TaskFile,
   [switch]$ListAll,
   [switch]$NoEffects,
@@ -27,9 +28,6 @@ if ($Silent) {
   $InformationPreference = 'SilentlyContinue'
 }
 
-# ListAll implied if no operations specified
-$ListAll = $ListAll -or -not ($Add -or $Complete)
-
 $script:TargetDate = $Date
 if ($InDays -ne $null) {
   $script:TargetDate = (Get-Date).AddDays($InDays).Date
@@ -40,6 +38,16 @@ if ($InDays -ne $null) {
 
 Write-CliInfo "loading tasks from $script:TaskFile"
 $script:Tasks = Get-Tasks $script:TaskFile
+
+if ($SelectComplete) {
+  $selected = $script:Tasks | Out-GridView -Title "Select task(s) to complete" -OutputMode Multiple
+  if ($selected) {
+    $Complete += $selected.Name
+  }
+}
+
+# ListAll implied if no operations specified
+$ListAll = $ListAll -or -not ($Add -or $Complete)
 
 if ($Add -or $Complete) {
   $Add = $Add | Where-Object {

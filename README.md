@@ -40,6 +40,7 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle-Tasks -c "Assignment #1", "Assignment 2"
 > Oracle-Tasks -Add "tmp" -Complete "tmp"           # does nothing basically
 > Oracle-Tasks -NoEffects -Complete "Assignment 2"  # disable fireworks
+> Oracle-Tasks -SelectComplete                      # open search and select gui
 
 # Manual spreading (`Oracle` does automated spreading but you should run this regularly)
 > Get-Help Oracle-Spread
@@ -47,6 +48,8 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle-Spread -Delay      # distributes tasks evenly, but doesn't include today
 > Oracle-Spread -KeepToday  # locks tasks set for today, then spreads the rest
 ```
+
+Note: for tasks names, you should probably choose short names, so you don't have to type as much...
 
 For task management, you can also edit the json directly, `oracle-tasks.json`. By default the json
 is stored in this directory, but you can specify the file with `-TaskFile ...`. See the
