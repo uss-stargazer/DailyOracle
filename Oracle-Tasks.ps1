@@ -37,48 +37,51 @@ if ($SelectComplete) {
   }
 }
 
+$Add = $Add | Where-Object {
+  if ($_ -in $script:Tasks.Name) {
+    Write-Warning "task already exists: $_"
+    $false
+  } else {
+    Write-CliMessage -Label 'ADD' -Color Magenta "$_ (due $($script:TargetDate.ToShortDateString()))"
+    $true
+  }
+}
+
+$Complete = $Complete | Where-Object {
+  if ($_ -in $script:Tasks.Name) {
+    Write-CliMessage -Label 'REMOVE' -Color Green "$_"
+    $true
+  } else {
+    Write-Warning "task doesn't exist: $_"
+    $false
+  }
+}
+
 # ListAll implied if no operations specified
 $ListAll = $ListAll -or -not ($Add -or $Complete)
 
 if ($Add -or $Complete) {
-  $Add = $Add | Where-Object {
-    if ($_ -in $script:Tasks.Name) {
-      Write-Warning "task already exists: $_"
-      $false
-    } else {
-      Write-Host "ADD: $_ (due on $script:TargetDate)"
-      $true
-    }
-  }
   if ($Add.Count -gt 0) {
-    $NewTasks = $Add | ForEach-Object { [Task]@{ Name = $_; Due = $script:TargetDate } }
-    $script:Tasks = [Task[]]$script:Tasks + [Task[]]$NewTasks
+    $script:Tasks += foreach ($name in $Add) {
+      [Task]@{ Name = $name; Due = $script:TargetDate }
+    }
   }
 
-  $Complete = $Complete | Where-Object {
-    if ($_ -in $script:Tasks.Name) {
-      Write-Host "COMPLETE: $_"
-      $true
-    } else {
-      Write-Warning "task doesn't exist: $_"
-      $false
-    }
-  }
   if ($Complete.Count -gt 0) {
     $script:Tasks = $script:Tasks | Where-Object { -not ($_.Name -in $Complete) }
     if (-not $NoEffects) {
-      Write-CliInfo "here's your dopamine (can disable with -NoEffects)"
+      Write-CliMessage "here's your dopamine (can disable with -NoEffects)"
       Write-Fireworks
     }
   }
 
-  Write-CliInfo 'writing tasks'
+  Write-CliMessage 'writing tasks'
   Write-Tasks $script:Tasks
 }
 
 if ($ListAll) {
   if ($script:Tasks.Count -eq 0) {
-    Write-CliInfo 'no tasks'
+    Write-CliMessage 'no tasks'
   }
   return $script:Tasks
 }

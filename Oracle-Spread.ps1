@@ -199,5 +199,5 @@ if ($taskIdx -lt ($script:Tasks.Count - 1)) {
 if ($script:IgnoredTasks) {
   $script:Tasks = @($script:IgnoredTasks) + @($script:Tasks)
 }
-Write-CliInfo 'spread computed and writing _TargetDate values'
+Write-CliMessage 'spread computed and writing _TargetDate values'
 Write-Tasks $script:Tasks

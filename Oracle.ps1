@@ -35,7 +35,7 @@ $ErrorActionPreference = 'Stop'
 ) | Sort-Object -Unique # order ascending and remove duplicates
 if ($script:TargetDates.Count -eq 0) {
   $script:TargetDates = @($today)
-}
+
 
 $null = $PSBoundParameters.Remove('InDays')
 $null = $PSBoundParameters.Remove('Dates')

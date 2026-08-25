@@ -51,9 +51,9 @@ function Write-Tasks([Task[]]$Tasks) {
 
 # misc utils --------------------------------------------------------------------------------------
 
-function Write-CliInfo([string]$Message) {
+function Write-CliMessage([string]$Message, [string]$Label = 'INFO', [string]$Color = 'Blue') {
   if ($InformationPreference -ne 'SilentlyContinue') {
-    Write-Host -ForegroundColor blue 'INFO' -NoNewLine
+    Write-Host -ForegroundColor $Color $Label -NoNewLine
     Write-Host "> $Message"
   }
 }
@@ -139,5 +139,5 @@ function Get-DefaultConfigFile() {
 
 if (-not $script:ConfigFile) {
   $script:ConfigFile = Get-DefaultConfigFile
-  Write-CliInfo "using config at $script:ConfigFile"
+  Write-CliMessage "using config at $script:ConfigFile"
 }
