@@ -35,7 +35,7 @@ $ErrorActionPreference = 'Stop'
 ) | Sort-Object -Unique # order ascending and remove duplicates
 if ($script:TargetDates.Count -eq 0) {
   $script:TargetDates = @($today)
-
+}
 
 $null = $PSBoundParameters.Remove('InDays')
 $null = $PSBoundParameters.Remove('Dates')
@@ -68,7 +68,14 @@ if ($script:OverdueTasks.Count -gt 0) {
 # if there are any values that don't have a target date, spread tasks
 if (($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0) {
   Write-Warning "some tasks don't have target dates, so running spread algorithm"
-  if (($script:Tasks | Where-Object { $_._TargetDate }).Count -ne 0) {
+  $hasExistingTargetDates = ($script:Tasks | Where-Object { $_._TargetDate }).Count -ne 0
+  $hasOutdatedTargetDates = (
+    $script:Tasks | Where-Object { $_._TargetDate -and ($_._TargetDate -lt $today) }
+  ).Count -ne 0
+  if ($hasExistingTargetDates -and (-not $hasOutdatedTargetDates)) {
+    # explanation: if $hasOutdatedTargetDates, it usually is being run at the beginning of the day
+    # (some task weren't completed yesterday), so redistributed without KeepToday, else (if things
+    # have already been distributed and stuff is being worked on) keep today's current progress
     $OracleParams['-KeepToday'] = $true
   }
   & "$PSScriptRoot/Oracle-Spread.ps1" @OracleParams
