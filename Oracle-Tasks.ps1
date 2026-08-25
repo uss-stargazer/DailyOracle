@@ -14,6 +14,7 @@ param(
   [string[]]$Add = @(),
   [string[]]$Complete = @(),
   [switch]$CompleteSelect,
+  [switch]$Edit,
   [switch]$ListAll,
   [switch]$NoEffects,
   [string]$ConfigFile,
@@ -22,6 +23,19 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/Oracle-Core.ps1"
+
+if ($Edit) {
+  $editor = $env:VISUAL
+  if (-not $editor) {
+    $editor = $env:EDITOR
+  }
+  if (-not $editor) {
+    Write-Error 'please define $env:VISUAL or $env:EDITOR to use -Edit'
+  }
+  Write-CliMessage "opening $editor"
+  & $editor $script:ConfigFile
+  exit
+}
 
 $script:TargetDate = $Date
 if ($InDays -ne $null) {
