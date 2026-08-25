@@ -32,7 +32,7 @@ $ErrorActionPreference = 'Stop'
 
 [DateTime[]]$script:TargetDates = (
   @($Dates) + @($InDays | ForEach-Object { $today.AddDays($_) })
-) | Sort-Object # order ascending
+) | Sort-Object -Unique # order ascending and remove duplicates
 if ($script:TargetDates.Count -eq 0) {
   $script:TargetDates = @($today)
 }
