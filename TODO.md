@@ -1,2 +1,0 @@
-- terminal animations for completing, etc
-    - -NoEffects flag for Oracle.ps1/oracle-tasks.ps1

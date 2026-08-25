@@ -15,6 +15,7 @@ param(
   [string[]]$Complete = @(),
   [string]$TaskFile,
   [switch]$ListAll,
+  [switch]$NoEffects,
   [switch]$Silent
 )
 
@@ -39,10 +40,6 @@ if ($InDays -ne $null) {
 
 Write-CliInfo "loading tasks from $script:TaskFile"
 $script:Tasks = Get-Tasks $script:TaskFile
-
-function Start-CompletionCelebration() {
-  Write-Host 'hooray' -ForegroundColor Green
-}
 
 if ($Add -or $Complete) {
   $Add = $Add | Where-Object {
@@ -70,7 +67,10 @@ if ($Add -or $Complete) {
   }
   if ($Complete.Count -gt 0) {
     $script:Tasks = $script:Tasks | Where-Object { -not ($_.Name -in $Complete) }
-    Start-CompletionCelebration
+    if (-not $NoEffects) {
+      Write-CliInfo "here's your dopamine (can disable with -NoEffects)"
+      Write-Fireworks
+    }
   }
 
   Write-CliInfo 'writing tasks'

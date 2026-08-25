@@ -43,6 +43,8 @@ is stored in this directory, but you can specify the file with `-TaskFile ...`. 
 
 ## how it works
 
+[ANIMATION CREDIT](https://github.com/p01nd3xt3r/PowershellAnimations/)
+
 ### algorithm
 
 NOTE: idk how to really format psuedocode, so sorry...
