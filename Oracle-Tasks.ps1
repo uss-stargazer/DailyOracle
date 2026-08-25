@@ -13,7 +13,7 @@ param(
   [nullable[int]]$InDays,
   [string[]]$Add = @(),
   [string[]]$Complete = @(),
-  [switch]$SelectComplete,
+  [switch]$CompleteSelect,
   [switch]$ListAll,
   [switch]$NoEffects,
   [string]$ConfigFile,
@@ -30,7 +30,7 @@ if ($InDays -ne $null) {
 
 $script:Tasks = Get-Tasks
 
-if ($SelectComplete) {
+if ($CompleteSelect) {
   $selected = $script:Tasks | Out-GridView -Title "Select task(s) to complete" -OutputMode Multiple
   if ($selected) {
     $Complete += $selected.Name

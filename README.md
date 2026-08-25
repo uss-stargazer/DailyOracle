@@ -32,6 +32,7 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle-Tasks -Add "Assignment #0", "Assignment #1" -Date 08/21/2077
 > Oracle-Tasks -Add "Assignment #2" -InDays 3   # 3 days from now
 > Oracle-Tasks -a "Assignment #3" 3             # 3 days from now
+> Oracle-Tasks -a "Assignment #5" -Date 6/18    # specific date
 > Oracle-Tasks -Add "Assignment #0"             # won't do anything if task already exists
 > Oracle-Tasks -Add "Assignment #4" -ListAll    # will return the final tasks state
 
@@ -53,7 +54,7 @@ Note: for tasks names, you should probably choose short names, so you don't have
 
 For task management, you can also edit the json directly. By default, it checks for 
 `DailyOracle.json` in `$HOME/Documents`, then `$HOME`, then this directory (you can also use
-symlinks). You can specify the file with `-Config` See the [schema](task-file-schema) for details.
+symlinks). You can specify the file with `-Config` See the [schema](#config-schema). for details.
 
 ## how it works
 
