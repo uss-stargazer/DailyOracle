@@ -157,7 +157,7 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   # in general there is (tasks / range) tasks per day, but every (range / remainder) days, there's
   # an extra one
   $range.NumTasks = [double]$range.NumTasks
-  $range.Length = [double]$range.Length
+  $range.Length = [double]($range.Length + 1) # +1 for current day inclusive
   $tasksPerDay = [int][Math]::Floor($range.NumTasks / $range.Length)
   $remainderTasks = [int]($range.NumTasks % $range.Length)
   if ($Delay) {

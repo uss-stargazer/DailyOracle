@@ -83,7 +83,7 @@ If ((!(Test-Path -pathtype leaf -literalpath $FireworksPath)) -or (!(Test-Path -
 }
 
 # CREDIT: https://github.com/p01nd3xt3r/PowershellAnimations/blob/main/Functions/Get-Fireworks.ps1
-function Write-Fireworks([int]$Speed = 15) {
+function Write-Fireworks([int]$Speed = 25) {
   if ($NoFireworks) {
     return
   }

@@ -42,14 +42,14 @@ $Add = $Add | Where-Object {
     Write-Warning "task already exists: $_"
     $false
   } else {
-    Write-CliMessage -Label 'ADD' -Color Magenta "$_ (due $($script:TargetDate.ToShortDateString()))"
+    Write-CliMessage -Label 'NEW' -Color Magenta "$_ (due $($script:TargetDate.ToShortDateString()))"
     $true
   }
 }
 
 $Complete = $Complete | Where-Object {
   if ($_ -in $script:Tasks.Name) {
-    Write-CliMessage -Label 'REMOVE' -Color Green "$_"
+    Write-CliMessage -Label 'DONE' -Color Green "$_"
     $true
   } else {
     Write-Warning "task doesn't exist: $_"
@@ -70,7 +70,6 @@ if ($Add -or $Complete) {
   if ($Complete.Count -gt 0) {
     $script:Tasks = $script:Tasks | Where-Object { -not ($_.Name -in $Complete) }
     if (-not $NoEffects) {
-      Write-CliMessage "here's your dopamine (can disable with -NoEffects)"
       Write-Fireworks
     }
   }

@@ -51,7 +51,8 @@ function Load-Tasks() {
     Write-Error 'excpected Tasks from Oracle-Tasks with correct type'
   }
   $script:OverdueTasks = $script:Tasks | Where-Object { $_.Due -lt $today } 
-  $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } 
+  $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } |
+    Sort-Object -Property Due # order by hightest priority
 }
 
 Load-Tasks
@@ -90,18 +91,39 @@ foreach ($targetDate in $script:TargetDates) {
   $script:Prophecy += @($script:Tasks | Where-Object { ($_._TargetDate).Date -eq $date })
 }
 
+function Get-DotColor([datetime]$TargetDate, [datetime]$DueDate) {
+  $daysUntil = (New-TimeSpan -Start $TargetDate -End $DueDate).Days
+  if ($daysUntil -lt 1) {
+    return 'Red'
+  } elseif ($daysUntil -lt 3) {
+    return 'DarkYellow'
+  } elseif ($daysUntil -lt 7) {
+    return 'Yellow'
+  } elseif ($daysUntil -lt 14) {
+    return 'Cyan'
+  } else {
+    return 'Blue'
+  }
+}
+
 function Write-ProphecyDotplot() {
   if ($script:Prophecy.Count -gt 0) {
     $min = $script:Prophecy[0]._TargetDate.Date
+    if ($today -in $script:TargetDates) {
+      $min = $today
+    }
     $max = $script:Prophecy[-1]._TargetDate.Date
   } else {
     Write-Host 'no prophecy to plot for dates'
     return
   }
   for ($d = $min; $d -le $max; $d = $d.AddDays(1)) {
-    $nTasks = ($script:Prophecy | Where-Object { $_._TargetDate.Date -eq $d }).Count
+    $taskDueDates = ($script:Prophecy | Where-Object { $_._TargetDate.Date -eq $d }).Due
     Write-Host "$($d.ToString("MM/dd/yyyy")) | " -NoNewLine
-    "x" * $nTasks | Format-Rainbow
+    foreach ($due in $taskDueDates) {
+      Write-Host 'x' -ForegroundColor (Get-DotColor $d $due) -NoNewLine
+    }
+    Write-Host # NewLine
   }
 }
 
