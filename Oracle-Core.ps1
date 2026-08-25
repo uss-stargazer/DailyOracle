@@ -129,12 +129,11 @@ if ($script:Silent) {
 
 function Get-DefaultConfigFile() {
   $dirs = Get-Item "$HOME/Documents", "$HOME", "$PSScriptRoot" -ErrorAction SilentlyContinue
-  $file = Get-ChildItem -Path $dirs -Filter "DailyOracle.json" -ErrorAction SilentlyContinue |
-    Select-Object -First 1
+  $file = Get-ChildItem -Path $dirs -Filter "DailyOracle.json" | Select-Object -First 1
   if (-not $file) {
     $file = Join-Path $dirs[0] 'DailyOracle.json'
   }
-  return $file
+  return $file.FullName
 }
 
 if (-not $script:ConfigFile) {
