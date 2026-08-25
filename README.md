@@ -1,40 +1,51 @@
 # Daily Oracle
 
-Your own bossy oracle to tell you what's going to happen and what you're going to do.
+Your own authoritative oracle to tell you what's going to happen and what you're going to do.
 
 In more coherrent words, a cli that loads a list of tasks and distributes them as evenly as possible
-between today and their due dates. then, you just call upon `Oracle` and it tells you what you need
-to do today. this way you can literally be as lazy as possible while completing your tasks on time.
+between today and their due dates. Then, you just call upon `Oracle` and it tells you what you need
+to do today. This way you can literally be as lazy as possible while completing your tasks on time.
 
 ## installation
 
-1. make sure your system has `powershell` or `pwsh`
+1. make sure your system has PowerShell >=5 (`powershell` or `pwsh`)
 2. just clone/download this repo somewhere and add the directory to your PATH
 
 ## usage
 
 ```powershell
-# Get a list of tasks to complete
+# Get a list of tasks to complete (your prophecy)
+> Get-Help Oracle
 > Oracle                    # today
 > Oracle -InDays 1          # tommorow
-> Oracle 20                 # 20 days from noew
-> Oracle -Date "08/21/77"   # specific date
+> Oracle 20                 # 20 days from now
+> Oracle -Dates "08/21/77"  # specific date
+> Oracle 0, 20              # prophecy for today and for 20 days for now
+> Oracle (0..20)            # all tasks for the next 20 days
+> Oracle (0..20) -Dotplot   # dotplot visualization of the next 20 days
 
 # List all tasks
-> Oracle-Tasks -Return
+> Get-Help Oracle-Tasks
+> Oracle-Tasks
 
 # Add tasks
 > Oracle-Tasks -Add "Assignment #0", "Assignment #1" -Date 08/21/2077
 > Oracle-Tasks -Add "Assignment #2" -InDays 3   # 3 days from now
 > Oracle-Tasks -a "Assignment #3" 3             # 3 days from now
+> Oracle-Tasks -Add "Assignment #0"             # won't do anything if task already exists
+> Oracle-Tasks -Add "Assignment #4" -ListAll    # will return the final tasks state
 
 # Complete tasks
 > Oracle-Tasks -Complete "Assignment #0"
 > Oracle-Tasks -c "Assignment #1", "Assignment 2"
-> Oracle-Tasks -Add "tmp" -Complete "tmp" # does nothing basically
+> Oracle-Tasks -Add "tmp" -Complete "tmp"           # does nothing basically
+> Oracle-Tasks -NoEffects -Complete "Assignment 2"  # disable fireworks
 
-# woops, i didn't mean to complete that task
-> Oracle-Tasks -Restore "Assignment 2"
+# Manual spreading (`Oracle` does automated spreading but you should run this regularly)
+> Get-Help Oracle-Spread
+> Oracle-Spread             # distributes tasks evenly
+> Oracle-Spread -Delay      # distributes tasks evenly, but doesn't include today
+> Oracle-Spread -KeepToday  # locks tasks set for today, then spreads the rest
 ```
 
 For task management, you can also edit the json directly, `oracle-tasks.json`. By default the json
@@ -43,7 +54,7 @@ is stored in this directory, but you can specify the file with `-TaskFile ...`. 
 
 ## how it works
 
-[ANIMATION CREDIT](https://github.com/p01nd3xt3r/PowershellAnimations/)
+CREDIT: [fireworks animation](https://github.com/p01nd3xt3r/PowershellAnimations)
 
 ### algorithm
 
