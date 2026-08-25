@@ -55,3 +55,18 @@ function Write-CliInfo([string]$Message) {
     Write-Host "> $Message"
   }
 }
+
+# misc utils --------------------------------------------------------------------------------------
+
+$colors = 2, 3, 4, 6, 8, 10, 11, 12, 13, 14, 15
+
+# https://www.bgreco.net/powershell/format-rainbow/
+function Format-Rainbow() {
+	$input | Out-String -Stream | % {
+		$chars = $_.TrimEnd() -split ''
+		foreach($char in $chars) {
+			Write-Host -ForegroundColor (Get-Random $colors) $char -NoNewline
+		}
+		Write-Host
+	}
+}

@@ -1,4 +1,2 @@
-- -option to show dotplot for Oracle.ps1
-    - from min(dates) to max(dates)
 - terminal animations for completing, etc
     - -NoEffects flag for Oracle.ps1/oracle-tasks.ps1

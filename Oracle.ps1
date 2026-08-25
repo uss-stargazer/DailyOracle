@@ -12,12 +12,17 @@
 
 .PARAMETER Dates
     Which days to show prophecy for. List of explicit dates.
+
+.PARAMETER Dotplot
+    Show fancy dotplot to visual task distribution. Shows in from min(Dates) to max(Dates);
+    everything in between.
 #>
 
 param (
   [Parameter(Position = 0)]
   [int[]]$InDays = @(),
   [DateTime[]]$Dates = @(),
+  [switch]$Dotplot,
   [string]$TaskFile,
   [switch]$Silent
 )
@@ -32,9 +37,7 @@ if ($Silent) {
 
 $today = (Get-Date).Date
 [DateTime[]]$script:TargetDates = (
-  $Dates + (
-    $InDays | ForEach-Object { $today.AddDays($_) }
-  )
+  @($Dates) + @($InDays | ForEach-Object { $today.AddDays($_) })
 ) | Sort-Object # order ascending
 
 $null = $PSBoundParameters.Remove('InDays')
@@ -68,7 +71,7 @@ Load-Tasks
 # overdue tasks are first priority for any date
 if ($script:OverdueTasks.Count -gt 0) {
   Write-Warning "prophecy has $($script:OverdueTasks.Count) overdue tasks!"
-  $script:TaskProphecy += $script:OverdueTasks
+  $script:TaskProphecy += @($script:OverdueTasks)
 }
 
 # if there are any values that don't have a target date, spread tasks
@@ -84,21 +87,35 @@ if (($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0) {
   Write-Error "spread algorithm run but some tasks still aren't"
 }
 
-function Get-Prophecy([datetime]$Date) {
-  $d = $Date.Date
-  return $script:Tasks | Where-Object { ($_._TargetDate).Date -eq $d }
-}
-
 foreach ($targetDate in $script:TargetDates) {
-  $script:Prophecy += Get-Prophecy $targetDate
+  $date = $targetDate.Date
+  $script:Prophecy += @($script:Tasks | Where-Object { ($_._TargetDate).Date -eq $date })
 }
 
-if ($script:Prophecy.Count -eq 0) {
-  Write-Host 'your future is yours... (nothing to do)'
+function Write-ProphecyDotplot() {
+  if ($script:Prophecy.Count -gt 0) {
+    $min = $script:Prophecy[0]._TargetDate.Date
+    $max = $script:Prophecy[-1]._TargetDate.Date
+  } else {
+    Write-Host 'no prophecy to plot for dates'
+    return
+  }
+  for ($d = $min; $d -le $max; $d = $d.AddDays(1)) {
+    $nTasks = ($script:Prophecy | Where-Object { $_._TargetDate.Date -eq $d }).Count
+    Write-Host "$($d.ToString("MM/dd/yyyy")) | " -NoNewLine
+    "x" * $nTasks | Format-Rainbow
+  }
+}
+
+if ($Dotplot) {
+  Write-ProphecyDotplot
 } else {
-  Write-Host 'Behold your ' -NoNewLine
-  Write-Host -ForegroundColor Magenta 'PrOpHeCy' -NoNewLine
-  Write-Host ':'
-}
+  if ($script:Prophecy.Count -eq 0) {
+    Write-Host 'your future is yours... (nothing to do)'
+  } else {
+    Write-Host 'Behold your ' -NoNewLine
+    'PrOpHeCy' | Format-Rainbow | Write-Host
+  }
 
-return $script:Prophecy
+  return $script:Prophecy
+}

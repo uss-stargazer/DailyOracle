@@ -159,8 +159,6 @@ if ($script:Tasks[-1].Due.Date -ne $maxDistDate.Date) {
   Write-Error "distribution doesn't contain all tasks (dev error)"
 }
 
-exit
-
 # resolve target dates ----------------------------------------------------------------------------
 
 $today = (Get-Date).Date
