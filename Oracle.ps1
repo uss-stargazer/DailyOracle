@@ -50,7 +50,7 @@ function Load-Tasks() {
   $script:Tasks = @(Get-Tasks)
   $script:OverdueTasks = $script:Tasks | Where-Object { $_.Due -lt $today } 
   $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } |
-    Sort-Object -Property Due, _TargetDate # order by hightest priority
+    Sort-Object -Property Due, _TargetDate, Name, Description # order by hightest priority, followed by metadata
 }
 
 Load-Tasks
@@ -81,6 +81,12 @@ if (($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0) {
   Write-Error "spread algorithm run but some tasks still aren't"
 }
 
+# warn if target dates are past due dates
+$willBeOverdue = ($script:Tasks | Where-Object { $_._TargetDate.Date -gt $_.Due.Date }).Count
+if ($willBeOverdue -gt 0) {
+  Write-Warning "there are $willBeOverdue tasks that will be completed past due date (run Oracle-Spread to fix)"
+}
+
 # target value of this script: tasks with targets in at the specified dates
 [Task[]]$script:Prophecy = @()
 
@@ -95,7 +101,9 @@ foreach ($targetDate in $script:TargetDates) {
 
 function Get-DotColor([datetime]$TargetDate, [datetime]$DueDate) {
   $daysUntil = (New-TimeSpan -Start $TargetDate -End $DueDate).Days
-  if ($daysUntil -lt 1) {
+  if ($daysUntil -lt 0) {
+    return 'DarkMagenta'
+  } elseif ($daysUntil -lt 1) {
     return 'Red'
   } elseif ($daysUntil -lt 3) {
     return 'DarkYellow'
