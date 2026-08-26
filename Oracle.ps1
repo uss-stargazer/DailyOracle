@@ -22,6 +22,7 @@ param (
   [Parameter(Position = 0)]
   [int[]]$InDays = @(),
   [DateTime[]]$Dates = @(),
+  [switch]$All,
   [switch]$Dotplot,
   [string]$ConfigFile,
   [switch]$Silent
@@ -30,11 +31,14 @@ param (
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/Oracle-Core.ps1"
 
-[DateTime[]]$script:TargetDates = (
-  @($Dates) + @($InDays | ForEach-Object { $today.AddDays($_) })
-) | Sort-Object -Unique # order ascending and remove duplicates
-if ($script:TargetDates.Count -eq 0) {
-  $script:TargetDates = @($today)
+if (-not $All) {
+  [DateTime[]]$script:TargetDates = (
+    @($Dates) + @($InDays | ForEach-Object { $today.AddDays($_) })
+  ) | Sort-Object -Unique # order ascending and remove duplicates
+
+  if ($script:TargetDates.Count -eq 0) {
+    $script:TargetDates = @($today)
+  }
 }
 
 $null = $PSBoundParameters.Remove('InDays')
@@ -46,13 +50,10 @@ function Load-Tasks() {
   $script:Tasks = @(Get-Tasks)
   $script:OverdueTasks = $script:Tasks | Where-Object { $_.Due -lt $today } 
   $script:Tasks = $script:Tasks | Where-Object { $_.Due -ge $today } |
-    Sort-Object -Property Due # order by hightest priority
+    Sort-Object -Property Due, _TargetDate # order by hightest priority
 }
 
 Load-Tasks
-
-# target value of this script: tasks with targets in at the specified dates
-[Task[]]$script:TaskProphecy = @()
 
 # overdue tasks are first priority for any date
 if ($script:OverdueTasks.Count -gt 0) {
@@ -80,6 +81,13 @@ if (($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0) {
   Write-Error "spread algorithm run but some tasks still aren't"
 }
 
+# target value of this script: tasks with targets in at the specified dates
+[Task[]]$script:Prophecy = @()
+
+if ($All) {
+  $script:Prophecy = $script:Tasks
+}
+
 foreach ($targetDate in $script:TargetDates) {
   $date = $targetDate.Date
   $script:Prophecy += @($script:Tasks | Where-Object { ($_._TargetDate).Date -eq $date })
@@ -103,7 +111,7 @@ function Get-DotColor([datetime]$TargetDate, [datetime]$DueDate) {
 function Write-ProphecyDotplot() {
   if ($script:Prophecy.Count -gt 0) {
     $min = $script:Prophecy[0]._TargetDate.Date
-    if ($today -in $script:TargetDates) {
+    if (($today -in $script:TargetDates) -or $All) {
       $min = $today
     }
     $max = $script:Prophecy[-1]._TargetDate.Date

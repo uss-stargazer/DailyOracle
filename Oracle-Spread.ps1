@@ -62,7 +62,7 @@ if ($script:Tasks.Count -eq 0) {
 }
 
 # order by due date ascending (important!)
-$script:Tasks = $script:Tasks | Sort-Object -Property Due
+$script:Tasks = $script:Tasks | Sort-Object -Property Due, Name, Description # also sort by metadata secondarily
 
 # get task distribution ---------------------------------------------------------------------------
 
