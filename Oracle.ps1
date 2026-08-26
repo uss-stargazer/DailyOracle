@@ -62,12 +62,13 @@ if ($script:OverdueTasks.Count -gt 0) {
 }
 
 # if there are any values that don't have a target date, spread tasks
-if (($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0) {
+$hasUnscheduledTargetDates = ($script:Tasks | Where-Object { -not $_._TargetDate }).Count -ne 0
+$hasExistingTargetDates = ($script:Tasks | Where-Object { $_._TargetDate }).Count -ne 0
+$hasOutdatedTargetDates = (
+  $script:Tasks | Where-Object { $_._TargetDate -and ($_._TargetDate -lt $today) }
+).Count -ne 0
+if ($hasUnscheduledTargetDates -or $hasOutdatedTargetDates) {
   Write-Warning "some tasks don't have target dates, so running spread algorithm"
-  $hasExistingTargetDates = ($script:Tasks | Where-Object { $_._TargetDate }).Count -ne 0
-  $hasOutdatedTargetDates = (
-    $script:Tasks | Where-Object { $_._TargetDate -and ($_._TargetDate -lt $today) }
-  ).Count -ne 0
   if ($hasExistingTargetDates -and (-not $hasOutdatedTargetDates)) {
     # explanation: if $hasOutdatedTargetDates, it usually is being run at the beginning of the day
     # (some task weren't completed yesterday), so redistributed without KeepToday, else (if things
@@ -138,6 +139,7 @@ function Write-ProphecyDotplot() {
 }
 
 if ($Dotplot) {
+  Write-CliMessage 'warmth of dot colors indicate proximity of _TargetDate to Due date'
   Write-ProphecyDotplot
 } else {
   if ($script:Prophecy.Count -eq 0) {
