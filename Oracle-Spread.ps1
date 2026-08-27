@@ -175,7 +175,13 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   # since the gap might be a fraction we have to precalculate gap days (rounding down)
   [int[]]$extraTaskDays = @()
   for ($i = 0; $i -lt $remainderTasks; $i++) {
-    $gapDay = [int][Math]::Floor(($gapStartIdx + $i) * [double]$gapSize)
+    $gapOffset = [int][Math]::Floor(($gapStartIdx + $i) * [double]$gapSize)
+
+    # offset is duration but we need index which i visualize as being in between duration ints. then
+    # we round down to prioritize tasks closer.
+    $gapDay = [Math]::Floor($gapOffset - 0.5)
+    $gapDay = [Math]::Max(0, $gapDay)
+
     $extraTaskDays += $gapDay
   }
 
