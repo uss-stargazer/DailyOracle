@@ -75,13 +75,13 @@ function Get-TaskDistRange([int]$Idx) {
   $endDay = [int]$endDays[$Idx]
   $startDay = 0
   if ($Idx -ne 0) {
-    $startDay = [int]$endDays[$Idx - 1]
+    $startDay = [int]$endDays[$Idx - 1] + 1 # +1 because dist ranges shouldn't overlap
   }
   return @{
     StartDay = $startDay
     EndDay = $endDay
     NumTasks = [int]($script:TaskDistribution[$Idx])
-    Length = $endDay - $startDay
+    Length = $endDay - $startDay + 1 # +1 for range start inclusive
   } 
 }
 
@@ -153,7 +153,7 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   # in general there is (tasks / range) tasks per day, but every (range / remainder) days, there's
   # an extra one
   $range.NumTasks = [double]$range.NumTasks
-  $range.Length = [double]($range.Length + 1) # +1 for current day inclusive
+  $range.Length = [double]$range.Length
   $tasksPerDay = [int][Math]::Floor($range.NumTasks / $range.Length)
   $remainderTasks = [int]($range.NumTasks % $range.Length)
   if ($Delay) {
