@@ -133,8 +133,10 @@ function Get-DefaultConfigFile() {
   $file = Get-ChildItem -Path $dirs -Filter "DailyOracle.json" | Select-Object -First 1
   if (-not $file) {
     $file = Join-Path $dirs[0] 'DailyOracle.json'
+  } else {
+    $file = $file.FullName
   }
-  return $file.FullName
+  return $file
 }
 
 if (-not $script:ConfigFile) {
