@@ -55,9 +55,15 @@ to do today. This way you can literally be as lazy as possible while completing 
 
 Note: for tasks names, you should probably choose short names, so you don't have to type as much...
 
-For task management, you can also edit the json directly. By default, it checks for 
-`DailyOracle.json` in `$HOME/Documents`, then `$HOME`, then this directory (you can also use
-symlinks). You can specify the file with `-ConfigFile` See the [schema](#config-schema). for details.
+For task management, you can also edit the json directly. By default, it uses the first instance of
+`DailyOracle.json` in the following paths:
+
+- `$HOME/OneDrive/Documents`
+- `$HOME/Documents`
+- `$HOME`
+- this directory (the downloaded source)
+
+You can also use symlinks. You can specify the file with `-ConfigFile` See the [schema](#config-schema). for details.
 
 ## how it works
 

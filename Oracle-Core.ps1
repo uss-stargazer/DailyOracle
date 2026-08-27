@@ -126,8 +126,10 @@ if ($script:Silent) {
   $InformationPreference = 'SilentlyContinue'
 }
 
+$ConfigSearchDirs = "$HOME/OneDrive/Documents", "$HOME/Documents", "$HOME", "$PSScriptRoot"
+
 function Get-DefaultConfigFile() {
-  $dirs = Get-Item "$HOME/Documents", "$HOME", "$PSScriptRoot" -ErrorAction SilentlyContinue
+  $dirs = Get-Item $ConfigSearchDirs -ErrorAction SilentlyContinue
   $file = Get-ChildItem -Path $dirs -Filter "DailyOracle.json" | Select-Object -First 1
   if (-not $file) {
     $file = Join-Path $dirs[0] 'DailyOracle.json'
