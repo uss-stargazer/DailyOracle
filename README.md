@@ -23,13 +23,16 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle -InDays 1          # tommorow
 > Oracle 20                 # 20 days from now
 > Oracle -Dates "08/21/77"  # specific date
+> Oracle -All               # all tasks (equivalent to Oracle-Tasks -ListAll)
 > Oracle 0, 20              # prophecy for today and for 20 days for now
 > Oracle (0..20)            # all prophecy for the next 20 days
 > Oracle (0..20) -Dotplot   # dotplot visualization of the next 20 days
+> Oracle -Dotplot -All      # visualize your entire future
 
 # List all tasks
 > Get-Help Oracle-Tasks
 > Oracle-Tasks
+> Oracle-Tasks -Edit # open json file (see below) in $env:VISUAL or $env:EDITOR
 
 # Add tasks
 > Oracle-Tasks -Add "Assignment #0", "Assignment #1" -Date 08/21/2077
@@ -48,9 +51,10 @@ to do today. This way you can literally be as lazy as possible while completing 
 
 # Manual spreading (`Oracle` does automated spreading but you should run this regularly)
 > Get-Help Oracle-Spread
-> Oracle-Spread             # distributes tasks evenly
-> Oracle-Spread -Delay      # distributes tasks evenly, but doesn't include today
-> Oracle-Spread -KeepToday  # locks tasks set for today, then spreads the rest
+> Oracle-Spread             # distributes tasks evenly between today and due dates, including today
+> Oracle-Spread -Delay      # distributes tasks evenly between today and due dates
+> Oracle-Spread -DelayDelay # distributes tasks evenly between today and due dates, including due dates
+> Oracle-Spread -KeepToday  # locks tasks set for today, then spreads the rest with the -Delay flag
 ```
 
 Note: for tasks names, you should probably choose short names, so you don't have to type as much...

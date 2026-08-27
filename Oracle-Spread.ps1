@@ -12,6 +12,10 @@
     distributes between the anchors. (in implementation, its a bit more complicated, but this is the
     gist)
 
+.PARAMETER DelayDelay
+    See -Delay option. It's basically the same (distributes between anchors), except it also
+    includes the latter (due dates).
+
 .PARAMETER KeepToday
     Anchor tasks that have _TargetDate as today and apply spread algorithm on the rest. Implicitly
     sets -Delay.
@@ -19,6 +23,7 @@
 
 param (
   [switch]$Delay,
+  [switch]$DelayDelay,
   [switch]$KeepToday,
   [string]$ConfigFile,
   [switch]$Silent
@@ -156,7 +161,10 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   $range.Length = [double]$range.Length
   $tasksPerDay = [int][Math]::Floor($range.NumTasks / $range.Length)
   $remainderTasks = [int]($range.NumTasks % $range.Length)
-  if ($Delay) {
+  if ($DelayDelay) {
+    $gapSize = $range.Length / [double]$remainderTasks
+    $gapStartIdx = 1
+  } elseif ($Delay) {
     $gapSize = $range.Length / [double]($remainderTasks + 1)
     $gapStartIdx = 1
   } else {
