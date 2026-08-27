@@ -14,6 +14,9 @@ to do today. This way you can literally be as lazy as possible while completing 
 ## usage
 
 ```powershell
+# showcase/TLDR (clone repo then run)
+> ./Oracle -All -Dotplot -ConfigFile ./DailyOracle.example.json
+
 # Get a list of tasks to complete (your prophecy)
 > Get-Help Oracle
 > Oracle                    # today
@@ -41,7 +44,7 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle-Tasks -c "Assignment #1", "Assignment 2"
 > Oracle-Tasks -Add "tmp" -Complete "tmp"           # does nothing basically
 > Oracle-Tasks -NoEffects -Complete "Assignment 2"  # disable fireworks
-> Oracle-Tasks -SelectComplete                      # open search and select gui
+> Oracle-Tasks -CompleteSelect                      # open search and select gui
 
 # Manual spreading (`Oracle` does automated spreading but you should run this regularly)
 > Get-Help Oracle-Spread
@@ -54,7 +57,7 @@ Note: for tasks names, you should probably choose short names, so you don't have
 
 For task management, you can also edit the json directly. By default, it checks for 
 `DailyOracle.json` in `$HOME/Documents`, then `$HOME`, then this directory (you can also use
-symlinks). You can specify the file with `-Config` See the [schema](#config-schema). for details.
+symlinks). You can specify the file with `-ConfigFile` See the [schema](#config-schema). for details.
 
 ## how it works
 
