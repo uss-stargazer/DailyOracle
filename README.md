@@ -55,6 +55,9 @@ to do today. This way you can literally be as lazy as possible while completing 
 > Oracle-Spread -Delay      # distributes tasks evenly between today and due dates
 > Oracle-Spread -DelayDelay # distributes tasks evenly between today and due dates, including due dates
 > Oracle-Spread -KeepToday  # locks tasks set for today, then spreads the rest with the -Delay flag
+
+# Update oracle
+> Oracle-Update
 ```
 
 Note: for tasks names, you should probably choose short names, so you don't have to type as much...
