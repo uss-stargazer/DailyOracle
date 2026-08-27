@@ -12,7 +12,7 @@ class Task {
 }
 
 # should be a Task method but powershell doesn't like that when converting from json...
-function ConvertTo-SerializedTask([Task]$task) {
+function ConvertTo-SerializedTask($task) {
   $serialized = @{
     Name = $task.Name
     Due  = $task.Due.ToString("yyyy-MM-dd")
