@@ -26,7 +26,8 @@ param (
   [switch]$DelayDelay,
   [switch]$KeepToday,
   [string]$ConfigFile,
-  [switch]$Silent
+  [switch]$Silent,
+  [switch]$Debug
 )
 
 $ErrorActionPreference = 'Stop'
@@ -94,8 +95,7 @@ function Add-RangeToDistribution([int]$endDay, [int]$numTasks) {
   Write-Debug "requested add range: $endDay with $numTasks tasks"
 
   $prevRange = Get-TaskDistRange -1
-  Write-Debug "previous range:"
-  $prevRange | Out-String | Write-Debug
+  Write-ObjectDebug $prevRange "previous range"
 
   $rangeLength = $endDay - $prevRange.EndDay
 
@@ -127,8 +127,7 @@ foreach ($task in $script:Tasks) {
   $dueDay = (New-TimeSpan -Start (Get-Date).Date -End $task.Due).Days
   $tasksByDueDay[[object]$dueDay]++
 }
-Write-Debug "tasksByDueDay:"
-$tasksByDueDay | Out-String | Write-Debug
+Write-ObjectDebug $tasksByDueDay "tasksByDueDay"
 
 foreach ($pair in $tasksByDueDay.GetEnumerator()) {
   $dueDay = $pair.Key
@@ -136,7 +135,7 @@ foreach ($pair in $tasksByDueDay.GetEnumerator()) {
   Add-RangeToDistribution $dueDay $numTasks
 }
 
-Write-Debug 'TaskDistribution computed'
+Write-ObjectDebug $script:TaskDistribution "task distribution"
 
 # some sanity checks
 $totalDistTasks = $script:TaskDistribution.GetEnumerator() |
@@ -153,7 +152,10 @@ if ($script:Tasks[-1].Due.Date -ne $maxDistDate.Date) {
 
 $taskIdx = 0
 for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
+  Write-Debug "new range starting at task idx: $taskIdx"
+
   $range = Get-TaskDistRange $rangeIdx
+  Write-ObjectDebug $range "range" 
 
   # in general there is (tasks / range) tasks per day, but every (range / remainder) days, there's
   # an extra one
@@ -171,19 +173,22 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
     $gapSize = $range.Length / [double]$remainderTasks
     $gapStartIdx = 0
   }
+  Write-Debug "range n tasks: $tasksPerDay (remainder: $remainderTasks)"
+  Write-Debug "range gap: every $gapSize starting at $gapStartIdx"
 
   # since the gap might be a fraction we have to precalculate gap days (rounding down)
   [int[]]$extraTaskDays = @()
   for ($i = 0; $i -lt $remainderTasks; $i++) {
-    $gapOffset = [int][Math]::Floor(($gapStartIdx + $i) * [double]$gapSize)
+    $gapOffset = ($gapStartIdx + $i) * [double]$gapSize
 
     # offset is duration but we need index which i visualize as being in between duration ints. then
     # we round down to prioritize tasks closer.
-    $gapDay = [Math]::Floor($gapOffset - 0.5)
+    $gapDay = [int][Math]::Floor($gapOffset - 0.5)
     $gapDay = [Math]::Max(0, $gapDay)
 
     $extraTaskDays += $gapDay
   }
+  Write-ObjectDebug $extraTaskDays "extrataskdays"
 
   for ($dayIdx = 0; $dayIdx -lt $range.Length; $dayIdx++) {
     $date = $today.AddDays($range.StartDay + $dayIdx)

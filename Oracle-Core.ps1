@@ -57,6 +57,13 @@ function Write-CliMessage([string]$Message, [string]$Label = 'INFO', [string]$Co
   }
 }
 
+function Write-ObjectDebug($Obj, [string]$Prefix) {
+  if ($DebugPreference -ne 'SilentlyContinue') {
+    Write-Debug "${Prefix}:"
+    [pscustomobject]$Obj | ConvertTo-Json -Compress | Write-Debug
+  }
+}
+
 $global:COLORS = 2, 3, 4, 6, 8, 10, 11, 12, 13, 14, 15
 $esc = [char]27
 
@@ -120,10 +127,14 @@ function Write-Fireworks([int]$Speed = 25) {
 
 $InformationPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
+$DebugPreference = 'SilentlyContinue'
 $PSNativeCommandUseErrorActionPreference = $true
 
 if ($script:Silent) {
   $InformationPreference = 'SilentlyContinue'
+}
+if ($script:Debug) {
+  $DebugPreference = 'Continue'
 }
 
 $ConfigSearchDirs = "$HOME/OneDrive/Documents", "$HOME/Documents", "$HOME", "$PSScriptRoot"
