@@ -180,13 +180,7 @@ for ($rangeIdx = 0; $rangeIdx -lt $script:TaskDistribution.Count; $rangeIdx++) {
   [int[]]$extraTaskDays = @()
   for ($i = 0; $i -lt $remainderTasks; $i++) {
     $gapOffset = ($gapStartIdx + $i) * [double]$gapSize
-
-    # offset is duration but we need index which i visualize as being in between duration ints. then
-    # we round down to prioritize tasks closer.
-    $gapDay = [int][Math]::Floor($gapOffset - 0.5)
-    $gapDay = [Math]::Max(0, $gapDay)
-
-    $extraTaskDays += $gapDay
+    $extraTaskDays += [int][Math]::Floor($gapOffset)
   }
   Write-ObjectDebug $extraTaskDays "extrataskdays"
 
